@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, Application, CommandHandler, CallbackQueryHandler
+from telegram.ext import ContextTypes, Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from simulation import *
 
 load_dotenv()
 
@@ -30,12 +31,17 @@ async def start_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
     if (query.data == START_GAME_ACTION):
         await query.edit_message_text("Game started!")
+        await start_simulation(update, context)
 
 def main():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(start_button_callback))
+    app.add_handler(CallbackQueryHandler(start_button_callback, pattern=START_GAME_ACTION))
+    app.add_handler(CallbackQueryHandler(population_button_callback, pattern=SHOW_POPULATION_GAME_ACTION))
+    app.add_handler(CallbackQueryHandler(money_button_callback, pattern=SHOW_MONEY_START_GAME_ACTION))
+    app.add_handler(CallbackQueryHandler(build_button_callback, pattern=BUILD_GAME_ACTION))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_city_name))
 
     print("Bot is running")
 
