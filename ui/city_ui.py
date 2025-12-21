@@ -21,13 +21,21 @@ class CityMap:
     def __init__(self):
         self.table = [[Cell() for _ in range(MAP_SIZE)] for _ in range(MAP_SIZE)]
     
-    def show_city_map(self):
+    def show_city_map(self) -> str:
+        text = ""
         for i in range(MAP_SIZE):
             for j in range(MAP_SIZE):
                 cell = self.table[i][j]
 
-                if (cell is None): print("E")
-                else: print(Building(Cell(cell).building).type)
+                if (cell.building is None):
+                    text += "E "
+                else:
+                    text += f"{cell.building.type} "
+                
+                if j == MAP_SIZE - 1:
+                    text += "\n"
+        
+        return text
 
 class Cell:
     def __init__(self):
