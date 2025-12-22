@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from simulation import *
+from router import *
 
 load_dotenv()
 
@@ -37,11 +38,14 @@ def main():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+
     app.add_handler(CallbackQueryHandler(start_button_callback, pattern=START_GAME_ACTION))
     app.add_handler(CallbackQueryHandler(population_button_callback, pattern=SHOW_POPULATION_GAME_ACTION))
     app.add_handler(CallbackQueryHandler(money_button_callback, pattern=SHOW_MONEY_START_GAME_ACTION))
     app.add_handler(CallbackQueryHandler(build_button_callback, pattern=BUILD_GAME_ACTION))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_city_name))
+    app.add_handler(CallbackQueryHandler(back_button_callback, pattern=BACK_ACTION))
+
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_router))
 
     print("Bot is running")
 

@@ -5,6 +5,15 @@ building_types = {
     "S": "Shop",
     "B": "Bank",
     "R": "Road",
-    "PS": "Power Station",
-    "SE": "Sewerage"
+    "P": "Power Station"
+}
+
+building_costs = {
+    "F": 50,
+    "H": 20,
+    "M": 30,
+    "S": 15,
+    "B": 40,
+    "R": 5,
+    "P": 60
 }

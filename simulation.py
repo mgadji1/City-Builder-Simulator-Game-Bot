@@ -5,9 +5,19 @@ from telegram.ext import ContextTypes
 SHOW_POPULATION_GAME_ACTION = "show_population"
 SHOW_MONEY_START_GAME_ACTION = "show_money"
 BUILD_GAME_ACTION = "build"
+BACK_ACTION = "back"
 
 CITY_KEY = "city"
 WAITING_FOR_CITY_NAME = "waiting_for_city_name"
+WAITING_FOR_BUILDING_COORDINATES_AND_TYPE = "waiting_for_building_coordinates"
+
+async def back_button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == BACK_ACTION:
+        context.user_data[WAITING_FOR_BUILDING_COORDINATES_AND_TYPE] = False
+        await send_city_actions(update, context)
 
 async def population_button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -15,22 +25,79 @@ async def population_button_callback(update: Update, context: ContextTypes.DEFAU
 
     city = context.user_data.get(CITY_KEY)
 
-    if (query.data == SHOW_POPULATION_GAME_ACTION):
-        await query.edit_message_text(f"Current population size: {city.population}")
+    if query.data == SHOW_POPULATION_GAME_ACTION:
+        back_button = InlineKeyboardButton(
+            text="Back",
+            callback_data=BACK_ACTION
+        )
+
+        keyboard = [[back_button]]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(text=f"Current population size: {city.population}", reply_markup=reply_markup)
 
 async def money_button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if (query.data == SHOW_MONEY_START_GAME_ACTION):
-        await query.edit_message_text("Money")
+    city = context.user_data.get(CITY_KEY)
+
+    if query.data == SHOW_MONEY_START_GAME_ACTION:
+        back_button = InlineKeyboardButton(
+            text="Back",
+            callback_data=BACK_ACTION
+        )
+
+        keyboard = [[back_button]]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(text=f"Current money amount: {city.money}", reply_markup=reply_markup)
+
+def get_building_types() -> str:
+    text = "Building types:\n"
+    for key, values in building_types.items():
+        text += f"{key} -> {values}(cost = {building_costs[key]})\n"
+    
+    return text
+
+async def handle_building_coordinates(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.user_data.get(WAITING_FOR_BUILDING_COORDINATES_AND_TYPE):
+        return
+
+    coordinates_and_type = update.message.text.split(" ")
+    type = coordinates_and_type[0]
+    x = int(coordinates_and_type[1])
+    y = int(coordinates_and_type[2])
+
+    city = context.user_data[CITY_KEY]
+
+    build_result = city.build(type, x, y)
+
+    await update.message.reply_text(build_result)
 
 async def build_button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if (query.data == BUILD_GAME_ACTION):
-        await query.edit_message_text("Build")
+    city = context.user_data.get(CITY_KEY)
+
+    if query.data == BUILD_GAME_ACTION:
+        context.user_data[WAITING_FOR_BUILDING_COORDINATES_AND_TYPE] = True
+
+        building_types_list = get_building_types()
+
+        back_button = InlineKeyboardButton(
+            text="Back",
+            callback_data=BACK_ACTION
+        )
+
+        keyboard = [[back_button]]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(text=f"City(E means empty cell): \n{city.map.show_city_map()}\n{building_types_list}\nChoose building type and input coordinates(from 1 to 10)\nFormat: <Type> <x> <y>", reply_markup=reply_markup)
 
 async def handle_city_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.user_data.get(WAITING_FOR_CITY_NAME):
@@ -71,10 +138,19 @@ async def send_city_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text(
-        text="Choose an action:",
-        reply_markup=reply_markup
-    )
+    if update.callback_query:
+        query = update.callback_query
+        await query.answer()
+
+        await query.edit_message_text(
+            text="Choose an action:",
+            reply_markup=reply_markup
+        )
+    else:
+        await update.message.reply_text(
+            text="Choose an action:",
+            reply_markup=reply_markup
+        )
 
 async def start_simulation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

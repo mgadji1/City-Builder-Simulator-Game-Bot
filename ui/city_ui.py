@@ -1,8 +1,9 @@
-from ui.building_types import building_types
+from ui.building_types import building_types, building_costs
+from random import randint
 
 MAP_SIZE = 10
 INIT_POPULATION_SIZE = 100
-INIT_MONEY_AMOUNT = 1000
+INIT_MONEY_AMOUNT = 200
 
 class City:
     def __init__(self, name):
@@ -11,11 +12,24 @@ class City:
         self.money = INIT_MONEY_AMOUNT
         self.map = CityMap()
 
+    def build(self, type: str, x: int, y: int) -> str:
+        cost = building_costs[type]
+
+        if self.money >= cost:
+            self.map.table[x - 1][y - 1].building = Building(type)
+            self.money -= cost
+
+            if type == "H": self.population += randint(50, 200)
+
+            return "Success"
+        else:
+            return "Not enough money"
+
 class Building:
-    def __init__(self, type, cost):
+    def __init__(self, type):
         self.type = type
         self.name = building_types[self.type]
-        self.cost = cost
+        self.cost = building_costs[type]
 
 class CityMap:
     def __init__(self):
