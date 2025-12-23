@@ -42,6 +42,7 @@ async def money_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
     await query.answer()
 
     city = context.user_data.get(CITY_KEY)
+    city.earn_money()
 
     if query.data == SHOW_MONEY_START_GAME_ACTION:
         back_button = InlineKeyboardButton(
@@ -53,12 +54,12 @@ async def money_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await query.edit_message_text(text=f"Current money amount: {city.money}", reply_markup=reply_markup)
+        await query.edit_message_text(text=f"Current money amount: {round(city.money, 2)}", reply_markup=reply_markup)
 
 def get_building_types() -> str:
     text = "Building types:\n"
     for key, values in building_types.items():
-        text += f"{key} -> {values}(cost = {building_costs[key]})\n"
+        text += f"{key} -> {values}(cost = {building_costs[key]}, income = {building_incomes[key]})\n"
     
     return text
 

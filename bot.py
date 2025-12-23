@@ -34,10 +34,14 @@ async def start_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
         await query.edit_message_text("Game started!")
         await start_simulation(update, context)
 
+async def actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_city_actions(update, context)
+
 def main():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("actions", actions))
 
     app.add_handler(CallbackQueryHandler(start_button_callback, pattern=START_GAME_ACTION))
     app.add_handler(CallbackQueryHandler(population_button_callback, pattern=SHOW_POPULATION_GAME_ACTION))
