@@ -1,11 +1,15 @@
-from ui.city_ui import *
+from models.city import *
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 SHOW_POPULATION_GAME_ACTION = "show_population"
 SHOW_MONEY_START_GAME_ACTION = "show_money"
 BUILD_GAME_ACTION = "build"
+SHOW_HAPPINESS_LEVEL_ACTION = "show_happiness_level"
 BACK_ACTION = "back"
+START_GAME_ACTION = "start_game"
+
+GAME_STARTED = "game_started"
 
 CITY_KEY = "city"
 WAITING_FOR_CITY_NAME = "waiting_for_city_name"
@@ -59,7 +63,7 @@ async def money_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
 def get_building_types() -> str:
     text = "Building types:\n"
     for key, values in building_types.items():
-        text += f"{key} -> {values}(cost = {building_costs[key]}, income = {building_incomes[key]})\n"
+        text += f"{key} -> {values}(cost = {building_costs[key]}, income = {building_incomes[key]}, happiness impact = {building_happiness_impact[key]})\n"
     
     return text
 
@@ -100,6 +104,24 @@ async def build_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
         await query.edit_message_text(text=f"City(E means empty cell): \n{city.map.show_city_map()}\n{building_types_list}\nChoose building type and input coordinates(from 1 to 10)\nFormat: <Type> <x> <y>", reply_markup=reply_markup)
 
+async def happiness_button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    city = context.user_data.get(CITY_KEY)
+
+    if query.data == SHOW_HAPPINESS_LEVEL_ACTION:
+        back_button = InlineKeyboardButton(
+            text="Back",
+            callback_data=BACK_ACTION
+        )
+
+        keyboard = [[back_button]]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(text=f"Current happiness level: {city.happiness}", reply_markup=reply_markup)
+
 async def handle_city_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.user_data.get(WAITING_FOR_CITY_NAME):
         return
@@ -112,6 +134,8 @@ async def handle_city_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(f"City '{name}' created!")
 
+    context.user_data[GAME_STARTED] = True
+
     await send_city_actions(update, context)
 
 async def create_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -120,6 +144,12 @@ async def create_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data[WAITING_FOR_CITY_NAME] = True
 
 async def send_city_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    city = context.user_data[CITY_KEY]
+    
+    if city.is_game_over():
+        await handle_game_over(update, context)
+        return
+
     population_button = InlineKeyboardButton(
         text="Show population",
         callback_data=SHOW_POPULATION_GAME_ACTION
@@ -134,8 +164,13 @@ async def send_city_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text="Build",
         callback_data=BUILD_GAME_ACTION
     )
+
+    happiness_button = InlineKeyboardButton(
+        text="Show happiness level",
+        callback_data=SHOW_HAPPINESS_LEVEL_ACTION
+    )
     
-    keyboard = [[population_button, money_button, build_button]]
+    keyboard = [[population_button, money_button, build_button, happiness_button]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -158,3 +193,22 @@ async def start_simulation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     await create_city(update, context)
+
+async def handle_game_over(update, context):
+    await update.effective_chat.send_message(
+        "💀 City happiness dropped below zero.\nYou lost. Game restarted."
+    )
+
+    context.user_data.clear()
+
+    start_button = InlineKeyboardButton(
+        text="Start game!",
+        callback_data=START_GAME_ACTION
+    )
+
+    reply_markup = InlineKeyboardMarkup([[start_button]])
+
+    await update.effective_chat.send_message(
+        "Press button to start a new game.",
+        reply_markup=reply_markup
+    )
