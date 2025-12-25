@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 ui/__pycache__
 ui/*.pyc
+router/__pycache__
+router/*.pyc
+simulation/__pycache__
+simulation/*.pyc

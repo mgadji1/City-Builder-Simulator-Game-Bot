@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
-from simulation import *
-from router import *
+from simulation.simulation import *
+from router.router import *
 
 load_dotenv()
 

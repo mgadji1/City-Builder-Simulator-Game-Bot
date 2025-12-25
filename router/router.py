@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from simulation import *
+from simulation.simulation import *
 
 async def message_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get(WAITING_FOR_CITY_NAME):

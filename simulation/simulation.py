@@ -102,7 +102,7 @@ async def build_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await query.edit_message_text(text=f"City(E means empty cell): \n{city.map.show_city_map()}\n{building_types_list}\nChoose building type and input coordinates(from 1 to 10)\nFormat: <Type> <x> <y>", reply_markup=reply_markup)
+        await query.edit_message_text(text=f"City '{city.name}' (E means empty cell): \n\n{city.map.show_city_map()}\n{building_types_list}\nChoose building type and input coordinates(from 1 to 10)\nFormat: <Type> <x> <y>", reply_markup=reply_markup)
 
 async def happiness_button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -149,6 +149,10 @@ async def send_city_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if city.is_game_over():
         await handle_game_over(update, context)
         return
+    
+    if city.is_game_win():
+        await handle_game_win(update, context)
+        return
 
     population_button = InlineKeyboardButton(
         text="Show population",
@@ -174,17 +178,19 @@ async def send_city_actions(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
+    main_menu_text = "Your goal is to make townspeople happy(hapiness >= 100)\nChoose an action:"
+
     if update.callback_query:
         query = update.callback_query
         await query.answer()
 
         await query.edit_message_text(
-            text="Choose an action:",
+            text=main_menu_text,
             reply_markup=reply_markup
         )
     else:
         await update.message.reply_text(
-            text="Choose an action:",
+            text=main_menu_text,
             reply_markup=reply_markup
         )
 
@@ -194,7 +200,7 @@ async def start_simulation(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await create_city(update, context)
 
-async def handle_game_over(update, context):
+async def handle_game_over(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_chat.send_message(
         "💀 City happiness dropped below zero.\nYou lost. Game restarted."
     )
@@ -210,5 +216,24 @@ async def handle_game_over(update, context):
 
     await update.effective_chat.send_message(
         "Press button to start a new game.",
+        reply_markup=reply_markup
+    )
+
+async def handle_game_win(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.effective_chat.send_message(
+        "🏆 Congratulations!\nYour city has reached a perfect state.\nYou won the game!"
+    )
+
+    context.user_data.clear()
+
+    start_button = InlineKeyboardButton(
+        text="Start new game",
+        callback_data=START_GAME_ACTION
+    )
+
+    reply_markup = InlineKeyboardMarkup([[start_button]])
+
+    await update.effective_chat.send_message(
+        "Do you want to start a new game?",
         reply_markup=reply_markup
     )

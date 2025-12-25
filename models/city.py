@@ -7,6 +7,8 @@ INIT_POPULATION_SIZE = 100
 INIT_MONEY_AMOUNT = 200.0
 INIT_HAPPINESS_LEVEL = 10
 
+NUMBER_OF_SPACES = 2
+
 class City:
     def __init__(self, name):
         self.name = name
@@ -15,6 +17,9 @@ class City:
         self.map = CityMap()
         self.last_update_time = time.time()
         self.happiness = INIT_HAPPINESS_LEVEL
+
+    def is_game_win(self) -> bool:
+        return self.happiness >= 100
     
     def is_game_over(self) -> bool:
         return self.happiness < 0 or self.money < 0
@@ -64,12 +69,12 @@ class CityMap:
                 cell = self.table[i][j]
 
                 if (cell.building is None):
-                    text += "E "
+                    text += ("E" + " " * NUMBER_OF_SPACES)
                 else:
-                    text += f"{cell.building.type} "
+                    text += (f"{cell.building.type}" + " " * NUMBER_OF_SPACES)
                 
                 if j == MAP_SIZE - 1:
-                    text += "\n"
+                    text += "\n" * NUMBER_OF_SPACES
         
         return text
 
