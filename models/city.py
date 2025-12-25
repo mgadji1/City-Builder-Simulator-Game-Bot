@@ -3,7 +3,7 @@ from random import randint
 import time
 
 MAP_SIZE = 10
-INIT_POPULATION_SIZE = 100
+INIT_POPULATION_SIZE = 1000
 INIT_MONEY_AMOUNT = 200.0
 INIT_HAPPINESS_LEVEL = 10
 
@@ -22,7 +22,7 @@ class City:
         return self.happiness >= 100
     
     def is_game_over(self) -> bool:
-        return self.happiness < 0 or self.money < 0
+        return self.happiness <= 0 or self.money <= 0 or self.population <= 0
 
     def build(self, type: str, x: int, y: int) -> str:
         cost = building_costs[type]
@@ -34,8 +34,7 @@ class City:
         self.map.table[x - 1][y - 1].building = Building(type)
         self.money -= cost
 
-        if type == "H":
-            self.population += randint(50, 200)
+        self.population += building_population_impact_coefficient[type] * randint(50, 200)
 
         return "Success"
 

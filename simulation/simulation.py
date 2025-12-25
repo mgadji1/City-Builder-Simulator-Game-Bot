@@ -202,7 +202,7 @@ async def start_simulation(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_game_over(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_chat.send_message(
-        "💀 City happiness dropped below zero.\nYou lost. Game restarted."
+        "💀 Your actions led to catastrophe in your city.\nYou lost. Game restarted."
     )
 
     context.user_data.clear()

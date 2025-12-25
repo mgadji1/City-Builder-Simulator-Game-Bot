@@ -18,6 +18,16 @@ building_costs = {
     "P": 60
 }
 
+building_population_impact_coefficient = {
+    "F": -3,
+    "H": 2,
+    "M": -2,
+    "S": 1,
+    "B": 1,
+    "R": 1,
+    "P": 2
+}
+
 building_incomes = {
     "F": 50,
     "H": -30,
