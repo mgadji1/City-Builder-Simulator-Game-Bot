@@ -1,17 +1,17 @@
-### City Builder Simulator
+# City Builder Simulator
 
 ## 📝 Description
 
 Build your city and make its townspeople happy! Do not waste money, make people happy!
 
-## Actions
+### Actions
 
 - Check population size
 - Check money amount
 - Build
 - Check happiness level
 
-## Building types
+### Building types
 
 - Factory
 - House
@@ -21,16 +21,20 @@ Build your city and make its townspeople happy! Do not waste money, make people 
 - Road
 - Power Station
 
-## Game flow
+### Game flow
 
 1. City map 10x10
 2. Building is main action
-3. Population size increases with number of houses
+3. Population size increases and decreases depending on your building types
 4. Money amount increases and decreases over time depending on your building types
 5. Happiness level >= 100 -> Win 🏆
 6. Happiness level <= 0 or Money amount <= 0 or Population size <= 0 -> Defeat 💀
 
-## Bot commands
+### Bot alias
+
+@city_builder_simulator_bot
+
+### Bot commands
 
 1. /start - starts game
 2. /help - prints bot commands

@@ -63,7 +63,8 @@ async def money_button_callback(update: Update, context: ContextTypes.DEFAULT_TY
 def get_building_types() -> str:
     text = "Building types:\n"
     for key, values in building_types.items():
-        text += f"{key} -> {values}(cost = {building_costs[key]}, income = {building_incomes[key]}, happiness impact = {building_happiness_impact[key]})\n"
+        pop_impact = "+" if building_population_impact_coefficient[key] > 0 else "-"
+        text += f"{key} -> {values}(cost = {building_costs[key]}, population impact = {pop_impact}, income = {building_incomes[key]}, happiness impact = {building_happiness_impact[key]})\n"
     
     return text
 
